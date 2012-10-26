@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 Plugin.create :favorited_count do
   UserConfig[:global_favedcount] ||= 0
+  UserConfig[:notice_devils] ||= true
+  UserConfig[:devilrank_notice_interval] ||= 1000
   @devils = {}
 
   def global_favedcount
@@ -20,8 +22,10 @@ Plugin.create :favorited_count do
       UserConfig[:global_favedcount] += 1
     end
 
-    if UserConfig[:global_favedcount] % 1000 == 0 and UserConfig[:global_favedcount] > 0
-      notice_devils(:system => false)
+    if UserConfig[:notice_devils]
+      if UserConfig[:global_favedcount] % UserConfig[:devilrank_notice_interval] == 0 and UserConfig[:global_favedcount] > 0
+        notice_devils(:system => false)
+      end
     end
 
   end
@@ -95,6 +99,15 @@ Plugin.create :favorited_count do
       array = hsv2rgb([100 * (1 - level), 0.3, 1.0])
     end
     [mp, array]
+  end
+
+  settings('ふぁぼ数カウント') do
+    settings('ふぁぼ数を指定(0-10000)') do
+      boolean('ふぁぼ魔ランキング通知を有効にする', :notice_devils).
+        tooltip '一定ふぁぼられ数ごとにツイートするよ'
+      adjustment('ふぁぼ魔ランキング通知インターバル', :devilrank_notice_interval, 20, 10000).
+        tooltip('あんまり少ないと大変なことになるよ')
+    end
   end
 
 end
