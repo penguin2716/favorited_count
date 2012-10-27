@@ -1,24 +1,47 @@
 # -*- coding: utf-8 -*-
+require 'pstore'
+
 Plugin.create :favorited_count do
   UserConfig[:global_favedcount] ||= 0
   UserConfig[:notice_devils] ||= true
   UserConfig[:devilrank_notice_interval] ||= 1000
-  @devils = {}
+
+  @db = PStore.new("/dev/shm/devils.db")
+
+  def increment(name)
+    @db.transaction do
+      unless @db.roots
+        @db[:devils] = {}
+      end
+
+      if @db[:devils][name]
+        @db[:devils][name] += 1
+      else
+        @db[:devils][name] = 1
+      end
+      
+    end
+  end
+
+  def devils(name = nil)
+    @db.transaction do
+      if name
+        @db[:devils][name]
+      elsif @db[:devils]
+        @db[:devils]
+      else
+        @db[:devils] = {}
+      end
+    end
+  end
 
   def global_favedcount
     UserConfig[:global_favedcount]
   end
 
-  def devils
-    @devils
-  end
-  
   on_favorite do |service, user, message|
     if user != Service.primary.user
-      if @devils[user.to_s] == nil
-        @devils[user.to_s] = 0
-      end
-      @devils[user.to_s] += 1
+      increment(user.to_s)
       UserConfig[:global_favedcount] += 1
     end
 
@@ -31,7 +54,7 @@ Plugin.create :favorited_count do
   end
 
   def notice_devils(hash)
-    top = @devils.sort_by{|key, value| -value}
+    top = devils.sort_by{|key, value| -value}
     tweet = "現在のふぁぼカウント: #{UserConfig[:global_favedcount]}ふぁぼヾ(★⌒ー⌒★)ノ\n"
     if hash[:system]
       if top.size >= 10
@@ -94,8 +117,8 @@ Plugin.create :favorited_count do
   end
 
   filter_message_background_color do | mp, array |
-    if @devils[mp.to_message.user.to_s]
-      level = min(1.0, @devils[mp.to_message.user.to_s] / 100.0)
+    if devils[mp.to_message.user.to_s]
+      level = min(1.0, devils[mp.to_message.user.to_s] / 100.0)
       array = hsv2rgb([100 * (1 - level), 0.3, 1.0])
     end
     [mp, array]
