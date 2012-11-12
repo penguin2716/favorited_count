@@ -65,17 +65,17 @@ Plugin.create :favorited_count do
       else
         tweet += "mikutter起動後のふぁぼ魔Top#{top.size}:\n"
         top.size.times { |n|
-          tweet += "〄#{top[n][0]}(#{top[n][1]}ふぁぼ)\n"
+          tweet += "♨#{top[n][0]}(#{top[n][1]}ふぁぼ)\n"
         }
       end
       Plugin.call(:update, nil, [Message.new(:message => tweet, :system => true)])
     else
       if top.size >= 3
-        tweet += "mikutter起動後のふぁぼ魔Top3は，〄#{top[0][0]}(#{top[0][1]}ふぁぼ)，〄#{top[1][0]}(#{top[1][1]}ふぁぼ)，〄#{top[2][0]}(#{top[2][1]}ふぁぼ)です！"
+        tweet += "mikutter起動後のふぁぼ魔Top3は，♨#{top[0][0]}(#{top[0][1]}ふぁぼ)，♨#{top[1][0]}(#{top[1][1]}ふぁぼ)，♨#{top[2][0]}(#{top[2][1]}ふぁぼ)です！"
       elsif top.size > 0
         tweet += "mikutter起動後のふぁぼ魔Top3は"
         top.size.times { |n|
-          tweet += "，〄#{top[n][0]}(#{top[n][1]}ふぁぼ)"
+          tweet += "，♨#{top[n][0]}(#{top[n][1]}ふぁぼ)"
         }
         tweet += "です！"
       end
