@@ -140,7 +140,7 @@ Plugin.create :favorited_count do
   settings('ふぁぼ数カウント') do
     settings('ふぁぼ数を指定(0-10000)') do
       boolean('ふぁぼ魔ランキング通知を有効にする', :notice_devils).
-        tooltip '一定ふぁぼられ数ごとにツイートするよ'
+        tooltip('一定ふぁぼられ数ごとにツイートするよ')
       adjustment('ふぁぼ魔ランキング通知インターバル', :devilrank_notice_interval, 20, 10000).
         tooltip('あんまり少ないと大変なことになるよ')
     end
