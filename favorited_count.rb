@@ -5,6 +5,8 @@ Plugin.create :favorited_count do
   UserConfig[:global_favedcount] ||= 0
   UserConfig[:notice_devils] ||= true
   UserConfig[:auto_favorite_devils] ||= false
+  UserConfig[:auto_favorite_reply] ||= true
+  UserConfig[:auto_favorite_reply_to_other] ||= false
   UserConfig[:auto_favorite_rate_max] ||= 80
   UserConfig[:devilrank_notice_interval] ||= 1000
 
@@ -127,11 +129,34 @@ Plugin.create :favorited_count do
   end
 
   on_appear do |ms|
-    ms.each do |m|
-      if devils[m.message.user.to_s]
-        if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
-          m.favorite
-        else
+
+    if UserConfig[:auto_favorite_reply] or
+        UserConfig[:auto_favorite_devils] or
+        UserConfig[:auto_favorite_reply_to_other]
+
+      ms.each do |m|
+
+        if devils[m.message.user.to_s]
+
+          # 自分宛のリプライのとき
+          if m.message.to_s =~ /@#{Service.primary.user.to_s}/ and UserConfig[:auto_favorite_reply]
+            if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
+              m.favorite
+            end
+
+            # 他人宛のリプライのとき
+          elsif m.message.to_s =~ /@[a-zA-Z0-9_]+/ and UserConfig[:auto_favorite_reply_to_other]
+            if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
+              m.favorite
+            end
+
+            # リプライじゃないとき
+          elsif not m.message.to_s =~ /@[a-zA-Z0-9_]+/ and UserConfig[:auto_favorite_devils]
+            if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
+              m.favorite
+            end
+          end
+
         end
       end
     end
@@ -145,7 +170,9 @@ Plugin.create :favorited_count do
         tooltip('あんまり少ないと大変なことになるよ')
     end
     settings('自動でふぁぼるオプション') do
-      boolean('よくふぁぼってくれる人を自動でふぁぼる', :auto_favorite_devils)
+      boolean('よくふぁぼってくれる人を自動でふぁぼる（リプライを除く）', :auto_favorite_devils)
+      boolean('自分宛リプライも自動でふぁぼる', :auto_favorite_reply)
+      boolean('他人宛リプライも自動でふぁぼる', :auto_favorite_reply_to_other)
       adjustment('自動でふぁぼる確率の最大値[%]', :auto_favorite_rate_max, 0, 100).
         tooltip('100%にしちゃう？しちゃう？')
     end
