@@ -146,13 +146,13 @@ Plugin.create :favorited_count do
 
             # 他人宛のリプライのとき
           elsif m.message.to_s =~ /@[a-zA-Z0-9_]+/ and UserConfig[:auto_favorite_reply_to_other]
-            if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
+            if rand(100) < min(100, devils[m.to_message.user.to_s]) * UserConfig[:auto_favorite_rate_max] / 100.0
               m.favorite
             end
 
             # リプライじゃないとき
           elsif not m.message.to_s =~ /@[a-zA-Z0-9_]+/ and UserConfig[:auto_favorite_devils]
-            if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
+            if rand(100) < min(100, devils[m.to_message.user.to_s]) * UserConfig[:auto_favorite_rate_max] / 100.0
               m.favorite
             end
           end
