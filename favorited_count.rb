@@ -4,6 +4,8 @@ require 'pstore'
 Plugin.create :favorited_count do
   UserConfig[:global_favedcount] ||= 0
   UserConfig[:notice_devils] ||= true
+  UserConfig[:auto_favorite_devils] ||= false
+  UserConfig[:auto_favorite_rate_max] ||= 80
   UserConfig[:devilrank_notice_interval] ||= 1000
 
   @db = PStore.new("/dev/shm/devils.db")
@@ -124,12 +126,28 @@ Plugin.create :favorited_count do
     [mp, array]
   end
 
+  on_appear do |ms|
+    ms.each do |m|
+      if devils[m.message.user.to_s]
+        if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
+          m.favorite
+        else
+        end
+      end
+    end
+  end
+
   settings('ふぁぼ数カウント') do
     settings('ふぁぼ数を指定(0-10000)') do
       boolean('ふぁぼ魔ランキング通知を有効にする', :notice_devils).
         tooltip '一定ふぁぼられ数ごとにツイートするよ'
       adjustment('ふぁぼ魔ランキング通知インターバル', :devilrank_notice_interval, 20, 10000).
         tooltip('あんまり少ないと大変なことになるよ')
+    end
+    settings('自動でふぁぼるオプション') do
+      boolean('よくふぁぼってくれる人を自動でふぁぼる', :auto_favorite_devils)
+      adjustment('自動でふぁぼる確率の最大値[%]', :auto_favorite_rate_max, 0, 100).
+        tooltip('100%にしちゃう？しちゃう？')
     end
   end
 
