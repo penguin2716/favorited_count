@@ -136,7 +136,7 @@ Plugin.create :favorited_count do
 
       ms.each do |m|
 
-        if devils[m.message.user.to_s] and m.user != Service.primary.user
+        if devils[m.message.user.to_s] and m.user != Service.primary.user and not m.retweet?
 
           # 自分宛のリプライのとき
           if m.message.to_s =~ /@#{Service.primary.user.to_s}/ and UserConfig[:auto_favorite_reply_to_me]
