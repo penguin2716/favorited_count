@@ -140,7 +140,7 @@ Plugin.create :favorited_count do
 
           # 自分宛のリプライのとき
           if m.message.to_s =~ /@#{Service.primary.user.to_s}/ and UserConfig[:auto_favorite_reply_to_me]
-            if rand(100) < min(UserConfig[:auto_favorite_rate_max], devils[m.to_message.user.to_s])
+            if rand(100) < min(100, devils[m.to_message.user.to_s]) * UserConfig[:auto_favorite_rate_max] / 100.0
               m.favorite
             end
 
