@@ -1,10 +1,10 @@
-slug: :plugin
+---
+slug: :favorited_count
 depends:
-  mikutter: 0.2.0.1053
+  mikutter: 0.2.1.1120
   plugin:
   - settings
-  - gui
-version: '0.1'
+version: '1.0'
 author: penguin2716
-name: favorited_count
-description: count favorites and color devils
+name: favorited count
+description: ふぁぼられた数に応じた機能を提供します
