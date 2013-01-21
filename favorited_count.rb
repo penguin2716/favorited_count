@@ -178,4 +178,16 @@ Plugin.create :favorited_count do
     end
   end
 
+  command(:get_favorited_count,
+          name: 'こいつからのふぁぼられ数を確認',
+          condition: lambda{ |opt| true },
+          visible: true,
+          role: :timeline) do |opt|
+    opt.messages.each { |m|
+      count = devils(m.user.to_s)
+      count = 0 unless count
+      Plugin.call(:update, nil, [Message.new(:message => "@#{m.user.to_s}から#{count}ふぁぼされています", :system => true)])
+    }
+  end
+
 end
