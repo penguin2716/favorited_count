@@ -12,6 +12,7 @@ Plugin.create :favorited_count do
   UserConfig[:auto_favorite_delay] ||= false
   UserConfig[:auto_favorite_delay_min] ||= 1000
   UserConfig[:auto_favorite_delay_max] ||= 10000
+  UserConfig[:auto_favorite_delay_system_message] ||= true
 
   @db = PStore.new("/dev/shm/devils.db")
 
@@ -175,6 +176,9 @@ Plugin.create :favorited_count do
     delay = add_delay
     unless message.favorite?
       message.favorite
+      if UserConfig[:auto_favorite_delay_system_message]
+        Plugin.call(:update, nil, [Message.new(:message => "@#{message.user.to_s}のツイートを#{delay}秒の遅延でふぁぼりました", :system => true)])
+      end
     end
   end
 
@@ -209,6 +213,7 @@ Plugin.create :favorited_count do
       boolean('遅延ふぁぼを有効にする', :auto_favorite_delay)
       adjustment('遅延ふぁぼ最小値[ミリ秒]', :auto_favorite_delay_min, 0, 20000)
       adjustment('遅延ふぁぼ最大値[ミリ秒]', :auto_favorite_delay_max, 0, 300000)
+      boolean('遅延確認のシステムメッセージを有効にする', :auto_favorite_delay_system_message)
     end
   end
 
