@@ -9,6 +9,9 @@ Plugin.create :favorited_count do
   UserConfig[:auto_favorite_reply_to_other] ||= false
   UserConfig[:auto_favorite_rate_max] ||= 80
   UserConfig[:devilrank_notice_interval] ||= 1000
+  UserConfig[:auto_favorite_delay] ||= false
+  UserConfig[:auto_favorite_delay_min] ||= 1000
+  UserConfig[:auto_favorite_delay_max] ||= 10000
 
   @db = PStore.new("/dev/shm/devils.db")
 
@@ -141,25 +144,55 @@ Plugin.create :favorited_count do
           # 自分宛のリプライのとき
           if m.message.to_s =~ /@#{Service.primary.user.to_s}/ and UserConfig[:auto_favorite_reply_to_me]
             if rand(100) < min(100, devils[m.to_message.user.to_s]) * UserConfig[:auto_favorite_rate_max] / 100.0
-              m.favorite
+              Thread.new {
+                delay = add_delay
+                unless m.favorite?
+                  m.favorite
+                end
+              }
             end
 
             # 他人宛のリプライのとき
           elsif m.message.to_s =~ /@[a-zA-Z0-9_]+/ and UserConfig[:auto_favorite_reply_to_other]
             if rand(100) < min(100, devils[m.to_message.user.to_s]) * UserConfig[:auto_favorite_rate_max] / 100.0
-              m.favorite
+              Thread.new {
+                delay = add_delay
+                unless m.favorite?
+                  m.favorite
+                end
+              }
             end
 
             # リプライじゃないとき
           elsif not m.message.to_s =~ /@[a-zA-Z0-9_]+/ and UserConfig[:auto_favorite_devils]
             if rand(100) < min(100, devils[m.to_message.user.to_s]) * UserConfig[:auto_favorite_rate_max] / 100.0
-              m.favorite
+              Thread.new {
+                delay = add_delay
+                unless m.favorite?
+                  m.favorite
+                end
+              }
             end
           end
 
         end
       end
     end
+  end
+
+  def add_delay
+    if UserConfig[:auto_favorite_delay]
+      delay_min = UserConfig[:auto_favorite_delay_min]
+      delay_max = UserConfig[:auto_favorite_delay_max]
+      delay_msec = delay_min
+      if delay_min < delay_max
+        delay_msec += rand(delay_max - delay_min)
+      end
+      sleep(delay_msec / 1000.0)
+      delay_msec / 1000.0
+    else
+      0
+    end      
   end
 
   settings('ふぁぼ数カウント') do
@@ -175,6 +208,9 @@ Plugin.create :favorited_count do
       boolean('他人宛リプライも自動でふぁぼる', :auto_favorite_reply_to_other)
       adjustment('自動でふぁぼる確率の最大値[%]', :auto_favorite_rate_max, 0, 100).
         tooltip('100%にしちゃう？しちゃう？')
+      boolean('遅延ふぁぼを有効にする', :auto_favorite_delay)
+      adjustment('遅延ふぁぼ最小値[ミリ秒]', :auto_favorite_delay_min, 0, 20000)
+      adjustment('遅延ふぁぼ最大値[ミリ秒]', :auto_favorite_delay_max, 0, 300000)
     end
   end
 
