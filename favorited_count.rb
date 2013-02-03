@@ -17,6 +17,10 @@ Plugin.create :favorited_count do
   @@db_tmp_place = "/dev/shm/devils.db"
   @@db_save_place = "/var/tmp/devils.db"
 
+  Signal.trap(:EXIT) {
+    `cp #{@@db_tmp_place} #{@@db_save_place}`
+  }
+
   def db_path
     if File.exist?(@@db_save_place)
       if File.exist?(@@db_tmp_place)
