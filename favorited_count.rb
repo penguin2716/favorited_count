@@ -14,7 +14,38 @@ Plugin.create :favorited_count do
   UserConfig[:auto_favorite_delay_max] ||= 10000
   UserConfig[:auto_favorite_delay_system_message] ||= true
 
-  @db = PStore.new("/dev/shm/devils.db")
+  @@db_tmp_place = "/dev/shm/devils.db"
+  @@db_save_place = "/var/tmp/devils.db"
+
+  def db_path
+    if File.exist?(@@db_save_place)
+      if File.exist?(@@db_tmp_place)
+        # tmpもsaveもどちらも存在
+        ctime_tmp  = File.ctime(@@db_tmp_place)
+        ctime_save = File.ctime(@@db_save_place)
+        if ctime_tmp - ctime_save > 0
+          # tmpの方が新しい
+          `cp #{@@db_tmp_place} #{@@db_save_place}`
+        else
+          # saveの方が新しい
+          `cp #{@@db_save_place} #{@@db_tmp_place}`
+        end
+      else
+        # saveにだけ存在
+        `cp #{@@db_save_place} #{@@db_tmp_place}`
+      end
+    else
+      if File.exist?(@@db_tmp_place)
+        # tmpにだけ存在
+        `cp #{@@db_tmp_place} #{@@db_save_place}`
+      else
+        # まだ存在してない
+      end
+    end
+    @@db_tmp_place
+  end
+
+  @db = PStore.new(db_path)
 
   def increment(name)
     @db.transaction do
