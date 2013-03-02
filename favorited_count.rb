@@ -175,6 +175,10 @@ Plugin.create :favorited_count do
 
       ms.each do |m|
 
+        if Time.now - m[:created] > 5
+          next
+        end
+
         if devils[m.message.user.to_s] and m.user != Service.primary.user and not m.retweet?
 
           # 自分宛のリプライのとき
