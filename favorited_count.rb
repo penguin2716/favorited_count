@@ -13,6 +13,7 @@ Plugin.create :favorited_count do
   UserConfig[:auto_favorite_delay_min] ||= 1000
   UserConfig[:auto_favorite_delay_max] ||= 10000
   UserConfig[:auto_favorite_delay_system_message] ||= true
+  UserConfig[:favcount_reply_coloring] ||= true
 
   @@db_tmp_place = "/dev/shm/devils.db"
   @@db_save_place = "/var/tmp/devils.db"
@@ -161,8 +162,10 @@ Plugin.create :favorited_count do
 
   filter_message_background_color do | mp, array |
     if devils[mp.to_message.user.to_s]
-      level = min(1.0, devils[mp.to_message.user.to_s] / 100.0)
-      array = hsv2rgb([100 * (1 - level), 0.3, 1.0])
+      if (not mp.to_message.to_me?) || UserConfig[:favcount_reply_coloring]
+        level = min(1.0, devils[mp.to_message.user.to_s] / 100.0)
+        array = hsv2rgb([100 * (1 - level), 0.3, 1.0])
+      end
     end
     [mp, array]
   end
@@ -253,6 +256,9 @@ Plugin.create :favorited_count do
       adjustment('遅延ふぁぼ最小値[ミリ秒]', :auto_favorite_delay_min, 0, 20000)
       adjustment('遅延ふぁぼ最大値[ミリ秒]', :auto_favorite_delay_max, 0, 300000)
       boolean('遅延確認のシステムメッセージを有効にする', :auto_favorite_delay_system_message)
+    end
+    settings('色分け') do
+      boolean('自分宛のリプライもふぁぼ数で色分けする', :favcount_reply_coloring)
     end
   end
 
