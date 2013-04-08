@@ -63,11 +63,13 @@ Plugin.create :favorited_count do
       else
         @db[:devils][name] = 1
       end
-      
+      @db_cache = @db[:devils]
     end
   end
 
   def devils(name = nil)
+    return @db_cache[name] if name and defined? @db_cache
+    return @db_cache if defined? @db_cache
     @db.transaction do
       if name
         @db[:devils][name]
@@ -76,6 +78,7 @@ Plugin.create :favorited_count do
       else
         @db[:devils] = {}
       end
+      @db_cache = @db[:devils]
     end
   end
 
