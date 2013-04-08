@@ -80,17 +80,22 @@ Plugin.create :favorited_count do
   end
 
   def global_favedcount
-    UserConfig[:global_favedcount]
+    return @global_favedcount if defined? @global_favedcount
+    @global_favedcount = UserConfig[:global_favedcount]
+  end
+
+  def increment_global_favedcount
+    UserConfig[:global_favedcount] = @global_favedcount = global_favedcount + 1
   end
 
   on_favorite do |service, user, message|
     if user != Service.primary.user
       increment(user.to_s)
-      UserConfig[:global_favedcount] += 1
+      increment_global_favedcount
     end
 
     if UserConfig[:notice_devils]
-      if UserConfig[:global_favedcount] % UserConfig[:devilrank_notice_interval] == 0 and UserConfig[:global_favedcount] > 0
+      if global_favedcount % UserConfig[:devilrank_notice_interval] == 0 and global_favedcount > 0
         notice_devils(:system => false)
       end
     end
